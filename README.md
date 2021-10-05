@@ -1,27 +1,70 @@
-# Autounsubscribe
+## Angular - Auto unsubscribe decorator 🐍
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.1.2.
+# Installation
 
-## Development server
+`npm install ngx-auto-unsubscribe --save`
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## Idea
 
-## Code scaffolding
+This library has created for removing
+useless code with manually unsubsribes,
+for this one was create decorator that work
+with all types of subscriptions, you can wrap
+observable parameter, method that return observable or
+method that return subscription and don't think
+about memory leak.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Examples
 
-## Build
+### Work with parameters
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+```js
+	export class UserComponent implements OnInit {
+		@AutoUnsubscribe() // <-- Should be on the target parameter
+		private userData$ = new BehaviorSubject(<-Some data->);
 
-## Running unit tests
+		public ngOnInit(): void {
+			// After ngOnDestroy this subscription will unsubscribe
+			this.userData$.subscribe();
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+			// Also you can override your parameter, and it
+			// will unsubscribe too
+			this.userData$ = new Subject();
+			this.userData$.subscribe();
+		}
+	}
+```
 
-## Running end-to-end tests
+### Work with method with observable
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+```js
+	export class UserComponent implements OnInit {
 
-## Further help
+		public ngOnInit(): void {
+			this.getUserData$.subscribe();
+		}
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+		@AutoUnsubscribe()
+		public getUserData$(): BehaviorSubject {
+			return new BehaviorSubject(<-Some data->);
+		}
+	}
+
+```
+
+### Work with method with subscription
+
+```js
+	export class UserComponent implements OnInit {
+
+		public ngOnInit(): void {
+			this.initUserDataSubscription();
+		}
+
+		@AutoUnsubscribe()
+		public initUserDataSubscription(): BehaviorSubject {
+			return new BehaviorSubject(<-Some data->).subscribe();
+		}
+	}
+
+```

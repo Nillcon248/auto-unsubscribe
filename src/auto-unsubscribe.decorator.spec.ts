@@ -1,11 +1,11 @@
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { AutoUnsubscribe as auto } from './auto-unsubscribe.decorator';
+import { AutoUnsubscribe as AutoUnsubscribeDecorator } from './auto-unsubscribe.decorator';
 
-const AutoUnsubscribe = auto;
+const AutoUnsubscribe = AutoUnsubscribeDecorator;
 
 class TestComponent {
   @AutoUnsubscribe()
-  parameter$ = new BehaviorSubject(0);
+  public parameter$ = new BehaviorSubject(0);
 
   public ngOnDestroy(): void {}
 
