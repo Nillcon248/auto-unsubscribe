@@ -3,7 +3,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "./dist/out-tsc",
+    "outDir": "dist/",
     "forceConsistentCasingInFileNames": true,
     "strict": false,
     "noImplicitReturns": true,
@@ -14,9 +14,9 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2015",
-    "module": "es2020",
-    "lib": ["es2018", "dom"]
+    "target": "es5",
+    "module": "commonjs",
+    "lib": ["dom", "es2015", "es2017"]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

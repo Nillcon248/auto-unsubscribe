@@ -1,5 +1,7 @@
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { AutoUnsubscribe } from './auto-unsubscribe.decorator';
+import { AutoUnsubscribe as auto } from './auto-unsubscribe.decorator';
+
+const AutoUnsubscribe = auto;
 
 class TestComponent {
   @AutoUnsubscribe()
@@ -28,6 +30,30 @@ describe('AutoUnsubscribe', () => {
   it('should unsubscribe from parameter after ngOnDestroy called', () => {
     const subscription = component.parameter$.subscribe();
 
+    expect(subscription.closed).toBeFalse();
+
     component.ngOnDestroy();
+
+    expect(subscription.closed).toBeTrue();
+  });
+
+  it('should unsubscribe from method result after ngOnDestroy called', () => {
+    const subscription = component.methodObservable().subscribe();
+
+    expect(subscription.closed).toBeFalse();
+
+    component.ngOnDestroy();
+
+    expect(subscription.closed).toBeTrue();
+  });
+
+  it('should unsubscribe from method thar return subscription after ngOnDestroy called', () => {
+    const subscription = component.methodSubscription();
+
+    expect(subscription.closed).toBeFalse();
+
+    component.ngOnDestroy();
+
+    expect(subscription.closed).toBeTrue();
   });
 });
