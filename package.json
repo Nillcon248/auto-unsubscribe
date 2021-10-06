@@ -3,6 +3,7 @@
   "description": "Decorator for auto unsubscribtion from observable",
   "version": "0.0.8",
   "main": "dist/auto-unsubscribe.decorator.js",
+  "license": "MIT",
   "scripts": {
     "build": "tsc",
     "test": "jasmine-ts --config=jasmine.json",
