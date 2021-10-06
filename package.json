@@ -1,7 +1,7 @@
 {
   "name": "ngx-auto-unsubscribe-decorator",
   "description": "Decorator for auto unsubscribtion from observable",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "scripts": {
     "build": "tsc",
     "test": "jasmine-ts --config=jasmine.json",
