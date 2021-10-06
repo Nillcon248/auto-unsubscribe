@@ -1,5 +1,6 @@
 {
-  "name": "auto-unsubscribe",
+  "name": "ngx-auto-unsubscribe-decorator",
+  "description": "Decorator for auto unsubscribtion from observable",
   "version": "0.0.1",
   "scripts": {
     "build": "tsc",
@@ -29,5 +30,18 @@
     "name": "Nillcon",
     "email": "nillcon248@gmail.com",
     "url": "https://www.linkedin.com/in/nillcon"
+  },
+  "keywords": [
+    "Angular",
+    "RxJs",
+    "Auto unsubscribe",
+    "Auto-unsubscribe",
+    "Autounsubscribe",
+    "Unsubscribe",
+    "Subscription",
+    "Observable unsubscribe"
+  ],
+  "repository": {
+    "url": "https://github.com/Nillcon248/auto-unsubscribe"
   }
 }
