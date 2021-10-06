@@ -10,12 +10,12 @@
 
 ## Idea 💡
 
-This library has created for removing
-useless code with manually unsubsribes,
-for this one was create decorator that work
+This library has been created for removing
+useless code with manually unsubscribes,
+for this one was created decorator that works
 with all types of subscriptions, you can wrap
-observable parameter, method that return observable or
-method that return subscription and don't think
+observable parameter, a method that returns observable or
+a method that returns subscription and doesn't think
 about memory leak.
 
 ## Examples 🧪
@@ -25,7 +25,7 @@ about memory leak.
 ```js
 export class UserComponent implements OnInit {
   @AutoUnsubscribe() // <-- Should be on the target parameter
-  private userData$ = new BehaviorSubject(<-Some data->);
+  private userData$ = new BehaviorSubject(/* Some data */);
 
   public ngOnInit(): void {
     // After ngOnDestroy this subscription will unsubscribe
@@ -44,19 +44,19 @@ export class UserComponent implements OnInit {
 export class UserComponent implements OnInit {
 
   public ngOnInit(): void {
-    this.getUserData$.subscribe();
+    this.getUserData$().subscribe();
 
     this.initUserDataSubscription();
   }
 
   @AutoUnsubscribe() // <-- Should be on the target method
   public getUserData$(): BehaviorSubject {
-    return new BehaviorSubject(<-Some data->);
+    return new BehaviorSubject(/* Some data */);
   }
 
   @AutoUnsubscribe() // <-- Should be on the target method
   public initUserDataSubscription(): BehaviorSubject {
-    return new BehaviorSubject(<-Some data->).subscribe();
+    return new BehaviorSubject(/* Some data */).subscribe();
   }
 }
 
