@@ -5,6 +5,7 @@
   "scripts": {
     "build": "tsc",
     "test": "jasmine-ts --config=jasmine.json",
+    "publish": "npm test && npm run build && npm publish",
     "publish:patch": "npm test && npm run build && npm version patch && npm publish",
     "publish:minor": "npm test && npm run build && npm version minor && npm publish",
     "publish:major": "npm test && npm run build && npm version major && npm publish"
