@@ -1,8 +1,12 @@
 ## Angular - Auto unsubscribe decorator 🦄
 
+[![npm](https://img.shields.io/npm/dt/ngx-auto-unsubscribe-decorator.svg)]()
+[![npm](https://img.shields.io/npm/l/ngx-auto-unsubscribe-decorator.svg)]()
+[![Build status](https://travis-ci.org/Nillcon248/ngx-base-state.svg?branch=master)](https://travis-ci.org/Nillcon248/ngx-auto-unsubscribe.svg?branch=master)
+
 # Installation
 
-`npm install ngx-auto-unsubscribe --save`
+`npm i ngx-auto-unsubscribe-decorator`
 
 ## Idea 💡
 
@@ -19,41 +23,41 @@ about memory leak.
 ### Work with parameters
 
 ```js
-	export class UserComponent implements OnInit {
-		@AutoUnsubscribe() // <-- Should be on the target parameter
-		private userData$ = new BehaviorSubject(<-Some data->);
+export class UserComponent implements OnInit {
+  @AutoUnsubscribe() // <-- Should be on the target parameter
+  private userData$ = new BehaviorSubject(<-Some data->);
 
-		public ngOnInit(): void {
-			// After ngOnDestroy this subscription will unsubscribe
-			this.userData$.subscribe();
+  public ngOnInit(): void {
+    // After ngOnDestroy this subscription will unsubscribe
+    this.userData$.subscribe();
 
-			// You can override parameter, it will unsubscribe too
-			this.userData$ = new Subject();
-			this.userData$.subscribe();
-		}
-	}
+    // You can override parameter, it will unsubscribe too
+    this.userData$ = new Subject();
+    this.userData$.subscribe();
+  }
+}
 ```
 
 ### Work with methods
 
 ```js
-	export class UserComponent implements OnInit {
+export class UserComponent implements OnInit {
 
-		public ngOnInit(): void {
-			this.getUserData$.subscribe();
+  public ngOnInit(): void {
+    this.getUserData$.subscribe();
 
-			this.initUserDataSubscription();
-		}
+    this.initUserDataSubscription();
+  }
 
-		@AutoUnsubscribe() // <-- Should be on the target method
-		public getUserData$(): BehaviorSubject {
-			return new BehaviorSubject(<-Some data->);
-		}
+  @AutoUnsubscribe() // <-- Should be on the target method
+  public getUserData$(): BehaviorSubject {
+    return new BehaviorSubject(<-Some data->);
+  }
 
-		@AutoUnsubscribe() // <-- Should be on the target method
-		public initUserDataSubscription(): BehaviorSubject {
-			return new BehaviorSubject(<-Some data->).subscribe();
-		}
-	}
+  @AutoUnsubscribe() // <-- Should be on the target method
+  public initUserDataSubscription(): BehaviorSubject {
+    return new BehaviorSubject(<-Some data->).subscribe();
+  }
+}
 
 ```

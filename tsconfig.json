@@ -6,6 +6,7 @@
     "outDir": "dist/",
     "forceConsistentCasingInFileNames": true,
     "strict": false,
+    "allowJs": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
@@ -24,5 +25,5 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": true
   },
-  "exclude": ["**/*.spec.ts"]
+  "exclude": ["**/*.spec.ts", "./dist/**/*"]
 }
