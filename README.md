@@ -1,10 +1,10 @@
-## Angular - Auto unsubscribe decorator 🐍
+## Angular - Auto unsubscribe decorator 🦄
 
 # Installation
 
 `npm install ngx-auto-unsubscribe --save`
 
-## Idea
+## Idea 💡
 
 This library has created for removing
 useless code with manually unsubsribes,
@@ -14,7 +14,7 @@ observable parameter, method that return observable or
 method that return subscription and don't think
 about memory leak.
 
-## Examples
+## Examples 🧪
 
 ### Work with parameters
 
@@ -27,41 +27,30 @@ about memory leak.
 			// After ngOnDestroy this subscription will unsubscribe
 			this.userData$.subscribe();
 
-			// Also you can override your parameter, and it
-			// will unsubscribe too
+			// You can override parameter, it will unsubscribe too
 			this.userData$ = new Subject();
 			this.userData$.subscribe();
 		}
 	}
 ```
 
-### Work with method with observable
+### Work with methods
 
 ```js
 	export class UserComponent implements OnInit {
 
 		public ngOnInit(): void {
 			this.getUserData$.subscribe();
-		}
 
-		@AutoUnsubscribe()
-		public getUserData$(): BehaviorSubject {
-			return new BehaviorSubject(<-Some data->);
-		}
-	}
-
-```
-
-### Work with method with subscription
-
-```js
-	export class UserComponent implements OnInit {
-
-		public ngOnInit(): void {
 			this.initUserDataSubscription();
 		}
 
-		@AutoUnsubscribe()
+		@AutoUnsubscribe() // <-- Should be on the target method
+		public getUserData$(): BehaviorSubject {
+			return new BehaviorSubject(<-Some data->);
+		}
+
+		@AutoUnsubscribe() // <-- Should be on the target method
 		public initUserDataSubscription(): BehaviorSubject {
 			return new BehaviorSubject(<-Some data->).subscribe();
 		}
