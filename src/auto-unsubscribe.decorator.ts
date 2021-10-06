@@ -16,6 +16,7 @@ function initializeAutoUnsubscription(targetClass: any): void {
 
     targetClass.ɵUnsubscriptionHasInitialized = true;
     targetClass.ɵSubscriptions = [];
+    targetClass.ɵObservables = [];
 
     targetClass.ngOnDestroy = function (): any {
       targetClass.ɵSubscriptions.forEach(
@@ -48,17 +49,10 @@ function defineIfProperty(
         return currentValue;
       },
       set: function (newValue: Observable<unknown>): void {
-        const originSubscribeMethod = newValue.subscribe;
-
-        newValue.subscribe = function (...args: unknown[]) {
-          const subscription = originSubscribeMethod.apply(this, args);
-
-          if (!subscription?.closed) {
-            targetClass.ɵSubscriptions.push(subscription);
-          }
-
-          return subscription;
-        };
+        defineSubscribeDefaultMethod.call(this, newValue, targetClass);
+        defineSubscribeForMethod.call(this, 'pipe', newValue);
+        defineSubscribeForMethod.call(this, 'lift', newValue);
+        defineSubscribeForMethod.call(this, 'asObservable', newValue);
 
         currentValue = newValue;
       },
@@ -78,20 +72,10 @@ function defineIfMethod(targetClass: any, descriptor: any): void {
       const result = originalMethod.apply(this, args);
 
       if (result.subscribe) {
-        const originalSubscriptionMethod = result.subscribe;
-
-        result.subscribe = function (
-          ...subscribeArgs: unknown[]
-        ): Subscription {
-          const subscription = originalSubscriptionMethod.apply(
-            this,
-            subscribeArgs
-          );
-
-          targetClass.ɵSubscriptions.push(subscription);
-
-          return subscription;
-        };
+        defineSubscribeDefaultMethod.call(this, result, targetClass);
+        defineSubscribeForMethod.call(this, 'pipe', result);
+        defineSubscribeForMethod.call(this, 'lift', result);
+        defineSubscribeForMethod.call(this, 'asObservable', result);
       } else {
         this.ɵSubscriptions.push(result);
       }
@@ -99,4 +83,41 @@ function defineIfMethod(targetClass: any, descriptor: any): void {
       return result;
     };
   }
+}
+
+function defineSubscribeDefaultMethod(
+  observable: Observable<unknown>,
+  targetClass: any
+): Observable<unknown> {
+  const originSubscribeMethod = observable.subscribe;
+
+  observable.subscribe = function (...args: unknown[]) {
+    const subscription = originSubscribeMethod.apply(this, args);
+
+    if (!subscription?.closed) {
+      targetClass.ɵSubscriptions.push(subscription);
+    }
+
+    return subscription;
+  };
+
+  return observable;
+}
+
+function defineSubscribeForMethod(
+  methodName: keyof Observable<unknown>,
+  observable: Observable<unknown>
+): void {
+  const originMethod = observable[methodName] as (
+    ...args: any[]
+  ) => Observable<unknown>;
+
+  (observable[methodName] as (...args: any[]) => Observable<unknown>) =
+    function (): any {
+      const result: Observable<unknown> = originMethod.apply(this, arguments);
+
+      result.subscribe = observable.subscribe;
+
+      return result;
+    };
 }
