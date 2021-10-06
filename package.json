@@ -1,7 +1,7 @@
 {
   "name": "ngx-auto-unsubscribe-decorator",
   "description": "Decorator for auto unsubscribtion from observable",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "main": "dist/auto-unsubscribe.decorator.js",
   "scripts": {
     "build": "tsc",
