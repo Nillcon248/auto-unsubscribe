@@ -106,4 +106,40 @@ describe('AutoUnsubscribe', () => {
 
     expect(subscription.closed).toBeTrue();
   });
+
+  it('should unsubscribe from subscription of parameter only in destroyed instance', () => {
+    const subscriptionFirst = component.parameter$.subscribe();
+
+    const newInstance = new TestComponent();
+    const subscriptionSecond = newInstance.parameter$.subscribe();
+
+    newInstance.ngOnDestroy();
+
+    expect(subscriptionSecond.closed).toBeTrue();
+    expect(subscriptionFirst.closed).toBeFalse();
+  });
+
+  it('should unsubscribe from subscription of method only in destroyed instance', () => {
+    const subscriptionFirst = component.methodObservable().subscribe();
+
+    const newInstance = new TestComponent();
+    const subscriptionSecond = newInstance.methodObservable().subscribe();
+
+    newInstance.ngOnDestroy();
+
+    expect(subscriptionSecond.closed).toBeTrue();
+    expect(subscriptionFirst.closed).toBeFalse();
+  });
+
+  it('should unsubscribe from subscription of method with subscription only in destroyed instance', () => {
+    const subscriptionFirst = component.methodSubscription();
+
+    const newInstance = new TestComponent();
+    const subscriptionSecond = newInstance.methodSubscription();
+
+    newInstance.ngOnDestroy();
+
+    expect(subscriptionSecond.closed).toBeTrue();
+    expect(subscriptionFirst.closed).toBeFalse();
+  });
 });
