@@ -12,8 +12,10 @@
     "publish:major": "npm test && npm run build && npm version major && npm publish"
   },
   "dependencies": {
-    "rxjs": "~6.6.0",
     "tslib": "^2.1.0"
+  },
+  "peerDependencies": {
+    "rxjs": "0.0.0-RXJS"
   },
   "devDependencies": {
     "@types/jasmine": "~3.6.0",
