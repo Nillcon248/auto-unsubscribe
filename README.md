@@ -64,4 +64,4 @@ export class UserComponent implements OnInit {
 
 ## Demo
 
-See the [Demo App](https://stackblitz.com/edit/angular-ivy-ujz6vk?devtoolsheight=33&file=src/app/autounsubscribe/autounsubscribe.component.ts) on Stackblitz
+See the [Example 1](https://stackblitz.com/edit/angular-ivy-3xkfrv?file=src/app/unsubscribe-decorator/unsubscribe-decorator.component.ts) [Example 2](https://stackblitz.com/edit/angular-ivy-ujz6vk?devtoolsheight=33&file=src/app/autounsubscribe/autounsubscribe.component.ts) on Stackblitz
