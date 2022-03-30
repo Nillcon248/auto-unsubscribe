@@ -1,7 +1,19 @@
-import { Observable, Subscription } from 'rxjs';
+
+interface Subscription {
+  closed: boolean;
+  unsubscribe: () => void;
+}
+
+interface Observable {
+  subscribe: (...args: any[]) => Subscription;
+  pipe: (...args: any[]) => Observable;
+  lift: (...args: any[]) => Observable;
+  asObservable: (...args: any[]) => Observable;
+}
+
 
 export function AutoUnsubscribe(): any {
-  return function (targetClass: any, key: string, descriptor: any): any {
+  return function InnerFunction(this: typeof InnerFunction, targetClass: any, key: string, descriptor: any): any {
     initializeAutoUnsubscription.call(this, targetClass);
 
     defineIfProperty.call(this, targetClass, key, descriptor);
@@ -51,7 +63,7 @@ function defineIfProperty(
       get: function (): unknown {
         return this[`ɵ${key}`];
       },
-      set: function (newValue: Observable<unknown>): void {
+      set: function (newValue: Observable): void {
         defineSubscribeDefaultMethod.call(this, newValue, targetClass);
         defineSubscribeForMethod.call(this, 'pipe', newValue);
         defineSubscribeForMethod.call(this, 'lift', newValue);
@@ -80,7 +92,6 @@ function defineIfMethod(targetClass: any, descriptor: any): void {
         defineSubscribeForMethod.call(this, 'lift', result);
         defineSubscribeForMethod.call(this, 'asObservable', result);
       } else {
-        console.log('subscription');
         setSubsription.call(this, targetClass, result);
       }
 
@@ -90,9 +101,10 @@ function defineIfMethod(targetClass: any, descriptor: any): void {
 }
 
 function defineSubscribeDefaultMethod(
-  observable: Observable<unknown>,
+  this: unknown,
+  observable: Observable,
   targetClass: any
-): Observable<unknown> {
+): Observable {
   const originSubscribeMethod = observable.subscribe;
   const self = this;
 
@@ -110,16 +122,17 @@ function defineSubscribeDefaultMethod(
 }
 
 function defineSubscribeForMethod(
-  methodName: keyof Observable<unknown>,
-  observable: Observable<unknown>
+  this: unknown,
+  methodName: keyof Observable,
+  observable: Observable
 ): void {
   const originMethod = observable[methodName] as (
     ...args: any[]
-  ) => Observable<unknown>;
+  ) => Observable;
 
-  (observable[methodName] as (...args: any[]) => Observable<unknown>) =
-    function (): any {
-      const result: Observable<unknown> = originMethod.apply(this, arguments);
+  (observable[methodName] as (...args: any[]) => Observable) =
+    function (this: unknown, ...args: any[]): any {
+      const result: Observable = originMethod.apply(this, args);
 
       result.subscribe = observable.subscribe;
 
@@ -127,7 +140,7 @@ function defineSubscribeForMethod(
     };
 }
 
-function setSubsription(targetClass: any, subscription: Subscription): void {
+function setSubsription(this: unknown, targetClass: any, subscription: Subscription): void {
   const targetSubscriptions = targetClass.ɵSubscriptions.get(this) || [];
 
   targetSubscriptions.push(subscription);
