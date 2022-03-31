@@ -1,4 +1,4 @@
-import { BehaviorSubject, of, Subscription } from 'rxjs';
+import { BehaviorSubject, interval, of, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { AutoUnsubscribe as AutoUnsubscribeDecorator } from './auto-unsubscribe.decorator';
 
@@ -7,6 +7,9 @@ const AutoUnsubscribe = AutoUnsubscribeDecorator;
 class TestComponent {
   @AutoUnsubscribe()
   public parameter$ = new BehaviorSubject(0);
+
+  @AutoUnsubscribe()
+  public subscription = interval(1000).subscribe();
 
   public ngOnDestroy(): void {}
 
@@ -141,5 +144,13 @@ describe('AutoUnsubscribe', () => {
 
     expect(subscriptionSecond.closed).toBeTrue();
     expect(subscriptionFirst.closed).toBeFalse();
+  });
+
+  it ('should unsubscribe from parameter with subscription', () => {
+    expect(component.subscription.closed).toBeFalse();
+
+    component.ngOnDestroy();
+
+    expect(component.subscription.closed).toBeTrue();
   });
 });

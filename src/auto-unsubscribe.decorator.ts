@@ -63,11 +63,15 @@ function defineIfProperty(
       get: function (): unknown {
         return this[`ɵ${key}`];
       },
-      set: function (newValue: Observable): void {
-        defineSubscribeDefaultMethod.call(this, newValue, targetClass);
-        defineSubscribeForMethod.call(this, 'pipe', newValue);
-        defineSubscribeForMethod.call(this, 'lift', newValue);
-        defineSubscribeForMethod.call(this, 'asObservable', newValue);
+      set: function (newValue: Observable | Subscription): void {
+        if (isObservable(newValue)) {
+          defineSubscribeDefaultMethod.call(this, newValue, targetClass);
+          defineSubscribeForMethod.call(this, 'pipe', newValue);
+          defineSubscribeForMethod.call(this, 'lift', newValue);
+          defineSubscribeForMethod.call(this, 'asObservable', newValue);
+        } else if (isSubscription(newValue)) {
+          setSubsription.call(this, targetClass, newValue);
+        }
 
         this[`ɵ${key}`] = newValue;
       },
@@ -86,12 +90,12 @@ function defineIfMethod(targetClass: any, descriptor: any): void {
     descriptor.value = function (...args: unknown[]): unknown {
       const result = originalMethod.apply(this, args);
 
-      if (result.subscribe) {
+      if (isObservable(result)) {
         defineSubscribeDefaultMethod.call(this, result, targetClass);
         defineSubscribeForMethod.call(this, 'pipe', result);
         defineSubscribeForMethod.call(this, 'lift', result);
         defineSubscribeForMethod.call(this, 'asObservable', result);
-      } else {
+      } else if (isSubscription(result)) {
         setSubsription.call(this, targetClass, result);
       }
 
@@ -146,3 +150,11 @@ function setSubsription(this: unknown, targetClass: any, subscription: Subscript
   targetSubscriptions.push(subscription);
   targetClass.ɵSubscriptions.set(this, targetSubscriptions);
 }
+
+function isObservable (variable: unknown): variable is Observable {
+  return !!(variable as Observable).subscribe;
+}
+
+function isSubscription (variable: unknown): variable is Subscription {
+  return !!(variable as Subscription).unsubscribe;
+} 
