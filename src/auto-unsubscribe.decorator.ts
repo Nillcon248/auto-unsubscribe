@@ -64,6 +64,8 @@ function defineIfProperty(
         return this[`ɵ${key}`];
       },
       set: function (newValue: Observable | Subscription): void {
+        this[`ɵ${key}`]?.unsubscribe();
+
         if (isObservable(newValue)) {
           defineSubscribeDefaultMethod.call(this, newValue, targetClass);
           defineSubscribeForMethod.call(this, 'pipe', newValue);

@@ -153,4 +153,17 @@ describe('AutoUnsubscribe', () => {
 
     expect(component.subscription.closed).toBeTrue();
   });
+
+  it ('should unsubscribe when property with subscription changed to new subscription', () => {
+    const newSubscription = interval(10000).subscribe();
+    
+    expect(newSubscription.closed).toBeFalse();
+
+    component.subscription = newSubscription;
+
+    // Rewrite subscription to the new one
+    component.subscription = interval(20000).subscribe();
+
+    expect(newSubscription.closed).toBeTrue();
+  });
 });
