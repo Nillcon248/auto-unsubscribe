@@ -70,7 +70,7 @@ function defineIfProperty(
           defineSubscribeForMethod.call(this, 'lift', newValue);
           defineSubscribeForMethod.call(this, 'asObservable', newValue);
         } else if (isSubscription(newValue)) {
-          setSubsription.call(this, targetClass, newValue);
+          setSubscription.call(this, targetClass, newValue);
         }
 
         this[`ɵ${key}`] = newValue;
@@ -96,7 +96,7 @@ function defineIfMethod(targetClass: any, descriptor: any): void {
         defineSubscribeForMethod.call(this, 'lift', result);
         defineSubscribeForMethod.call(this, 'asObservable', result);
       } else if (isSubscription(result)) {
-        setSubsription.call(this, targetClass, result);
+        setSubscription.call(this, targetClass, result);
       }
 
       return result;
@@ -116,7 +116,7 @@ function defineSubscribeDefaultMethod(
     const subscription = originSubscribeMethod.apply(this, args);
 
     if (!subscription?.closed) {
-      setSubsription.call(self, targetClass, subscription);
+      setSubscription.call(self, targetClass, subscription);
     }
 
     return subscription;
@@ -144,7 +144,7 @@ function defineSubscribeForMethod(
     };
 }
 
-function setSubsription(this: unknown, targetClass: any, subscription: Subscription): void {
+function setSubscription(this: unknown, targetClass: any, subscription: Subscription): void {
   const targetSubscriptions = targetClass.ɵSubscriptions.get(this) || [];
 
   targetSubscriptions.push(subscription);
