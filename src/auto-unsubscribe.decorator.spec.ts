@@ -165,5 +165,6 @@ describe('AutoUnsubscribe', () => {
     component.subscription = interval(20000).subscribe();
 
     expect(newSubscription.closed).toBeTrue();
+    expect(component.subscription.closed).toBeFalse();
   });
 });
