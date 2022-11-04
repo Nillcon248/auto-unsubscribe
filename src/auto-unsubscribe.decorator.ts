@@ -1,16 +1,4 @@
-
-interface Subscription {
-  closed: boolean;
-  unsubscribe: () => void;
-}
-
-interface Observable {
-  subscribe: (...args: any[]) => Subscription;
-  pipe: (...args: any[]) => Observable;
-  lift: (...args: any[]) => Observable;
-  asObservable: (...args: any[]) => Observable;
-}
-
+import type { Subscription, Observable } from 'rxjs';
 
 export function AutoUnsubscribe(): any {
   return function InnerFunction(this: typeof InnerFunction, targetClass: any, key: string, descriptor: any): any {
@@ -63,7 +51,7 @@ function defineIfProperty(
       get: function (): unknown {
         return this[`ɵ${key}`];
       },
-      set: function (newValue: Observable | Subscription): void {
+      set: function (newValue: Observable<unknown> | Subscription): void {
         if (isObservable(newValue)) {
           defineSubscribeDefaultMethod.call(this, newValue, targetClass);
           defineSubscribeForMethod.call(this, 'pipe', newValue);
@@ -106,9 +94,9 @@ function defineIfMethod(targetClass: any, descriptor: any): void {
 
 function defineSubscribeDefaultMethod(
   this: unknown,
-  observable: Observable,
+  observable: Observable<unknown>,
   targetClass: any
-): Observable {
+): Observable<unknown> {
   const originSubscribeMethod = observable.subscribe;
   const self = this;
 
@@ -127,16 +115,16 @@ function defineSubscribeDefaultMethod(
 
 function defineSubscribeForMethod(
   this: unknown,
-  methodName: keyof Observable,
-  observable: Observable
+  methodName: keyof Observable<unknown>,
+  observable: Observable<unknown>
 ): void {
   const originMethod = observable[methodName] as (
     ...args: any[]
-  ) => Observable;
+  ) => Observable<unknown>;
 
-  (observable[methodName] as (...args: any[]) => Observable) =
+  (observable[methodName] as (...args: any[]) => Observable<unknown>) =
     function (this: unknown, ...args: any[]): any {
-      const result: Observable = originMethod.apply(this, args);
+      const result: Observable<unknown> = originMethod.apply(this, args);
 
       result.subscribe = observable.subscribe;
 
@@ -151,8 +139,8 @@ function setSubsription(this: unknown, targetClass: any, subscription: Subscript
   targetClass.ɵSubscriptions.set(this, targetSubscriptions);
 }
 
-function isObservable (variable: unknown): variable is Observable {
-  return !!(variable as Observable).subscribe;
+function isObservable (variable: unknown): variable is Observable<unknown> {
+  return !!(variable as Observable<unknown>).subscribe;
 }
 
 function isSubscription (variable: unknown): variable is Subscription {
