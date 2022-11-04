@@ -1,4 +1,4 @@
-import { Descriptor, InnerInstance, RxEntity, TargetClass } from '@src/interfaces';
+import { Descriptor, RxEntity, TargetClass } from '@src/interfaces';
 import { RxEntityFactory } from '../rx-entities';
 import { RxClassMemberBase } from './rx-class-member-base';
 
@@ -7,12 +7,7 @@ export class RxClassMethod extends RxClassMemberBase {
         return !!descriptor?.value;
     }
 
-    public define(
-        instance: InnerInstance,
-        targetClass: TargetClass,
-        _key: string,
-        descriptor: Descriptor,
-    ): void {
+    public define(targetClass: TargetClass, _key: string, descriptor: Descriptor): void {
         const originalMethod = descriptor?.value;
 
         descriptor.value = function (...args: unknown[]): RxEntity {
@@ -20,7 +15,7 @@ export class RxClassMethod extends RxClassMemberBase {
 
             const entity = RxEntityFactory.getInstance(result);
 
-            entity.process(instance, targetClass, result);
+            entity.process(this, targetClass, result);
 
             return result;
         };

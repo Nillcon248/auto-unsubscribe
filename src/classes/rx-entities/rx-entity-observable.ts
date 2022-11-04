@@ -1,11 +1,11 @@
-import type { Observable, Subscription } from 'rxjs';
 import { InnerInstance, RxEntity, TargetClass } from '@src/interfaces';
+import type { Observable, Subscription } from 'rxjs';
 import { RxEntityBase } from './rx-entity-base';
 
 type ObservableMethod = (...args: any[]) => Observable<unknown>;
 type SubscriptionMethod = (...args: any[]) => Subscription;
 
-const OverrideMethodNames = ['subscribe', 'pipe', 'lift', 'asObservable'];
+const OverrideMethodNames = ['pipe', 'lift', 'asObservable'];
 
 export class RxEntityObservable extends RxEntityBase {
     public check(variable: RxEntity): boolean {
@@ -22,6 +22,9 @@ export class RxEntityObservable extends RxEntityBase {
             targetClass,
             observable,
         );
+
+        observable.subscribe = subscriptionMethod;
+
         this.overrideMethods(observable, subscriptionMethod);
     }
 
@@ -50,16 +53,24 @@ export class RxEntityObservable extends RxEntityBase {
         observable: Observable<unknown>,
         subscribeMethod: SubscriptionMethod,
     ): void {
-        OverrideMethodNames.forEach((methodName) => {
-            const originMethod = observable[methodName] as ObservableMethod;
+        OverrideMethodNames.forEach((methodName) =>
+            this.processObservableMethod(observable, methodName, subscribeMethod),
+        );
+    }
 
-            observable[methodName] = function (this: unknown, ...args: any[]): unknown {
-                const result: Observable<unknown> = originMethod.apply(this, args);
+    private processObservableMethod(
+        observable: Observable<unknown>,
+        methodName: string,
+        subscribeMethod: SubscriptionMethod,
+    ): void {
+        const originMethod = observable[methodName] as ObservableMethod;
 
-                result.subscribe = subscribeMethod;
+        observable[methodName] = function (this: unknown, ...args: any[]): unknown {
+            const result: Observable<unknown> = originMethod.apply(this, args);
 
-                return result;
-            };
-        });
+            result.subscribe = subscribeMethod;
+
+            return result;
+        };
     }
 }
