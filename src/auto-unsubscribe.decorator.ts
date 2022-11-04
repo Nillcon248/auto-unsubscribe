@@ -1,148 +1,155 @@
-import type { Subscription, Observable } from 'rxjs';
+import type { Subscription } from 'rxjs';
+import { RxClassMemberFactory } from './classes/rx-members';
+import { Descriptor, InnerInstance, TargetClass } from './interfaces';
 
 export function AutoUnsubscribe(): any {
-  return function InnerFunction(this: typeof InnerFunction, targetClass: any, key: string, descriptor: any): any {
-    initializeAutoUnsubscription.call(this, targetClass);
+    return function InnerFunction(
+        this: typeof InnerFunction,
+        targetClass: TargetClass,
+        key: string,
+        descriptor: Descriptor,
+    ): any {
+        console.log(this);
 
-    defineIfProperty.call(this, targetClass, key, descriptor);
+        // initializeAutoUnsubscription.call(this, targetClass);
 
-    defineIfMethod.call(this, targetClass, descriptor);
-  };
-}
+        // const classMember = RxClassMemberFactory.getInstance(descriptor);
 
-function initializeAutoUnsubscription(targetClass: any): void {
-  if (!targetClass.ɵUnsubscriptionHasInitialized) {
-    const defaultNgOnDestroy = targetClass.ngOnDestroy;
-
-    targetClass.ɵUnsubscriptionHasInitialized = true;
-    targetClass.ɵSubscriptions = new WeakMap<Object, Subscription>();
-
-    targetClass.ngOnDestroy = function (): any {
-      const targetSubscriptions = targetClass.ɵSubscriptions.get(this);
-
-      if (targetSubscriptions?.length) {
-        targetSubscriptions.forEach(
-          (subscription: Subscription, index: number) => {
-            subscription.unsubscribe();
-
-            targetSubscriptions[index] = null;
-          }
-        );
-
-        targetSubscriptions.length = 0;
-
-        targetClass.ɵSubscriptions.delete(this);
-      }
-
-      if (defaultNgOnDestroy && typeof defaultNgOnDestroy === 'function') {
-        return defaultNgOnDestroy.apply(this);
-      }
+        // classMember.define(this, targetClass, key, descriptor);
     };
-  }
 }
 
-function defineIfProperty(
-  targetClass: any,
-  key: string,
-  descriptor: any
-): void {
-  if (!descriptor) {
-    descriptor = {
-      get: function (): unknown {
-        return this[`ɵ${key}`];
-      },
-      set: function (newValue: Observable<unknown> | Subscription): void {
-        if (isObservable(newValue)) {
-          defineSubscribeDefaultMethod.call(this, newValue, targetClass);
-          defineSubscribeForMethod.call(this, 'pipe', newValue);
-          defineSubscribeForMethod.call(this, 'lift', newValue);
-          defineSubscribeForMethod.call(this, 'asObservable', newValue);
-        } else if (isSubscription(newValue)) {
-          setSubscription.call(this, targetClass, newValue);
-        }
+function initializeAutoUnsubscription(targetClass: TargetClass): void {
+    if (!targetClass?.ɵUnsubscriptionHasInitialized) {
+        const defaultNgOnDestroy = targetClass.ngOnDestroy;
 
-        this[`ɵ${key}`] = newValue;
-      },
-      enumerable: true,
-      configurable: true,
-    };
+        targetClass.ɵUnsubscriptionHasInitialized = true;
+        targetClass.ɵSubscriptions = new WeakMap<Object, Subscription[]>();
 
-    Object.defineProperty(targetClass, key, descriptor);
-  }
-}
+        targetClass.ngOnDestroy = function (): any {
+            const targetSubscriptions = targetClass.ɵSubscriptions.get(this);
 
-function defineIfMethod(targetClass: any, descriptor: any): void {
-  const originalMethod = descriptor?.value;
+            if (targetSubscriptions?.length) {
+                targetSubscriptions.forEach((subscription: Subscription, index: number) => {
+                    subscription.unsubscribe();
 
-  if (originalMethod) {
-    descriptor.value = function (...args: unknown[]): unknown {
-      const result = originalMethod.apply(this, args);
+                    targetSubscriptions[index] = null;
+                });
 
-      if (isObservable(result)) {
-        defineSubscribeDefaultMethod.call(this, result, targetClass);
-        defineSubscribeForMethod.call(this, 'pipe', result);
-        defineSubscribeForMethod.call(this, 'lift', result);
-        defineSubscribeForMethod.call(this, 'asObservable', result);
-      } else if (isSubscription(result)) {
-        setSubscription.call(this, targetClass, result);
-      }
+                targetSubscriptions.length = 0;
 
-      return result;
-    };
-  }
-}
+                targetClass.ɵSubscriptions.delete(this);
+            }
 
-function defineSubscribeDefaultMethod(
-  this: unknown,
-  observable: Observable<unknown>,
-  targetClass: any
-): Observable<unknown> {
-  const originSubscribeMethod = observable.subscribe;
-  const self = this;
-
-  observable.subscribe = function (...args: unknown[]) {
-    const subscription = originSubscribeMethod.apply(this, args);
-
-    if (!subscription?.closed) {
-      setSubscription.call(self, targetClass, subscription);
+            if (defaultNgOnDestroy && typeof defaultNgOnDestroy === 'function') {
+                return defaultNgOnDestroy.apply(this);
+            }
+        };
     }
-
-    return subscription;
-  };
-
-  return observable;
 }
 
-function defineSubscribeForMethod(
-  this: unknown,
-  methodName: keyof Observable<unknown>,
-  observable: Observable<unknown>
-): void {
-  const originMethod = observable[methodName] as (
-    ...args: any[]
-  ) => Observable<unknown>;
+// function defineIfProperty(targetClass: TargetClass, key: string, descriptor: Descriptor): void {
+//     if (!descriptor) {
+//         descriptor = {
+//             get: function (): unknown {
+//                 return this[`ɵ${key}`];
+//             },
+//             set: function (newValue: Observable<unknown> | Subscription): void {
+//                 if (isObservable(newValue)) {
+//                     defineSubscribeDefaultMethod.call(this, newValue, targetClass);
+//                     defineSubscribeForMethod.call(this, 'pipe', newValue);
+//                     defineSubscribeForMethod.call(this, 'lift', newValue);
+//                     defineSubscribeForMethod.call(this, 'asObservable', newValue);
+//                 } else if (isSubscription(newValue)) {
+//                     setSubscription.call(this, targetClass, newValue);
+//                 }
 
-  (observable[methodName] as (...args: any[]) => Observable<unknown>) =
-    function (this: unknown, ...args: any[]): any {
-      const result: Observable<unknown> = originMethod.apply(this, args);
+//                 this[`ɵ${key}`] = newValue;
+//             },
+//             enumerable: true,
+//             configurable: true,
+//         } as Descriptor;
 
-      result.subscribe = observable.subscribe;
+//         Object.defineProperty(targetClass, key, descriptor);
+//     }
+// }
 
-      return result;
-    };
-}
+// function defineIfMethod(targetClass: TargetClass, descriptor: any): void {
+//     const originalMethod = descriptor?.value;
 
-function setSubscription(this: unknown, targetClass: any, subscription: Subscription): void {
-  const targetSubscriptions = targetClass.ɵSubscriptions.get(this) || [];
+//     if (originalMethod) {
+//         descriptor.value = function (...args: unknown[]): unknown {
+//             const result = originalMethod.apply(this, args);
 
-  targetSubscriptions.push(subscription);
-  targetClass.ɵSubscriptions.set(this, targetSubscriptions);
-}
+//             if (isObservable(result)) {
+//                 defineSubscribeDefaultMethod.call(this, result, targetClass);
+//                 defineSubscribeForMethod.call(this, 'pipe', result);
+//                 defineSubscribeForMethod.call(this, 'lift', result);
+//                 defineSubscribeForMethod.call(this, 'asObservable', result);
+//             } else if (isSubscription(result)) {
+//                 setSubscription.call(this, targetClass, result);
+//             }
 
-function isObservable (variable: unknown): variable is Observable<unknown> {
-  return !!(variable as Observable<unknown>).subscribe;
-}
+//             return result;
+//         };
+//     }
+// }
 
-function isSubscription (variable: unknown): variable is Subscription {
-  return !!(variable as Subscription).unsubscribe;
-} 
+// function defineSubscribeDefaultMethod(
+//     this: unknown,
+//     observable: Observable<unknown>,
+//     targetClass: any,
+// ): Observable<unknown> {
+//     const originSubscribeMethod = observable.subscribe;
+//     const self = this;
+
+//     observable.subscribe = function (...args: unknown[]) {
+//         const subscription = originSubscribeMethod.apply(this, args);
+
+//         if (!subscription?.closed) {
+//             setSubscription.call(self, targetClass, subscription);
+//         }
+
+//         return subscription;
+//     };
+
+//     return observable;
+// }
+
+// function defineSubscribeForMethod(
+//     this: unknown,
+//     methodName: keyof Observable<unknown>,
+//     observable: Observable<unknown>,
+// ): void {
+//     const originMethod = observable[methodName] as (...args: any[]) => Observable<unknown>;
+
+//     (observable[methodName] as (...args: any[]) => Observable<unknown>) = function (
+//         this: unknown,
+//         ...args: any[]
+//     ): any {
+//         const result: Observable<unknown> = originMethod.apply(this, args);
+
+//         result.subscribe = observable.subscribe;
+
+//         return result;
+//     };
+// }
+
+// function setSubscription(
+//     this: unknown,
+//     targetClass: TargetClass,
+//     subscription: Subscription,
+// ): void {
+//     const targetSubscriptions = targetClass.ɵSubscriptions.get(this) || [];
+
+//     targetSubscriptions.push(subscription);
+//     targetClass.ɵSubscriptions.set(this, targetSubscriptions);
+// }
+
+// function isObservable(variable: unknown): variable is Observable<unknown> {
+//     return !!(variable as Observable<unknown>).subscribe;
+// }
+
+// function isSubscription(variable: unknown): variable is Subscription {
+//     return !!(variable as Subscription).unsubscribe;
+// }
