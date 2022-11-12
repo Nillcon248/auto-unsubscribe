@@ -1,4 +1,5 @@
 import { Descriptor, RxEntity, TargetClass } from '@src/interfaces';
+import { Subscription } from 'rxjs';
 import { RxEntityFactory } from '../rx-entities';
 import { RxClassMemberBase } from './rx-class-member-base';
 
@@ -14,6 +15,7 @@ export class RxClassProperty extends RxClassMemberBase {
     }
 
     private getDescriptor(targetClass: TargetClass): Descriptor {
+        const self = this;
         let value: RxEntity;
 
         const descriptor: Descriptor = {
@@ -21,6 +23,8 @@ export class RxClassProperty extends RxClassMemberBase {
                 return value;
             },
             set: function (newValue: RxEntity): void {
+                self.unsubscribeIfPossible(value);
+
                 const entity = RxEntityFactory.getInstance(newValue);
 
                 entity.process(this, targetClass, newValue);
@@ -32,5 +36,9 @@ export class RxClassProperty extends RxClassMemberBase {
         };
 
         return descriptor;
+    }
+
+    private unsubscribeIfPossible(value: RxEntity): void {
+        (value as Subscription)?.unsubscribe();
     }
 }

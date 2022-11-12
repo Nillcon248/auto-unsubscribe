@@ -1,5 +1,5 @@
 import { BehaviorSubject, interval, of, Subscription } from 'rxjs';
-import { finalize, switchMap, tap } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 import { AutoUnsubscribe as AutoUnsubscribeDecorator } from './auto-unsubscribe.decorator';
 
 const AutoUnsubscribe = AutoUnsubscribeDecorator;
@@ -27,12 +27,7 @@ class TestComponent {
     public methodObservableWithPipeSubscription(): Subscription {
         return new BehaviorSubject(0)
             .asObservable()
-            .pipe(
-                switchMap(() =>
-                    new BehaviorSubject(123).pipe(finalize(() => console.log('finalize'))),
-                ),
-                tap(console.log),
-            )
+            .pipe(switchMap(() => new BehaviorSubject(123).pipe()))
             .subscribe();
     }
 }
@@ -171,5 +166,19 @@ describe('AutoUnsubscribe', () => {
         component.ngOnDestroy();
 
         expect(subscription.closed).toBeTrue();
+    });
+
+    it('should unsubscribe when property with subscription changed to new subscription', () => {
+        const newSubscription = interval(10000).subscribe();
+
+        expect(newSubscription.closed).toBeFalse();
+
+        component.subscription = newSubscription;
+
+        // Rewrite subscription to the new one
+        component.subscription = interval(20000).subscribe();
+
+        expect(newSubscription.closed).toBeTrue();
+        expect(component.subscription.closed).toBeFalse();
     });
 });

@@ -10,7 +10,7 @@ const METHOD_KEYS_TO_OVERRIDE: SubjectKey[] = ['pipe', 'lift', 'asObservable'];
 
 export class RxEntityObservable extends RxEntityBase {
     public check(variable: RxEntity): boolean {
-        return !!(variable as Observable<unknown>).subscribe;
+        return variable instanceof Observable;
     }
 
     public process(

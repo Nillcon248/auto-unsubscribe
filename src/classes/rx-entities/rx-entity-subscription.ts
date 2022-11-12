@@ -1,10 +1,10 @@
-import type { Subscription } from 'rxjs';
 import { InnerInstance, RxEntity, TargetClass } from '@src/interfaces';
+import { Subscription } from 'rxjs';
 import { RxEntityBase } from './rx-entity-base';
 
 export class RxEntitySubscription extends RxEntityBase {
     public check(variable: RxEntity): boolean {
-        return !!(variable as Subscription).unsubscribe;
+        return variable instanceof Subscription;
     }
 
     public process(
