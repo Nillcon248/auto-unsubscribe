@@ -17,30 +17,36 @@ export function AutoUnsubscribe(): any {
 }
 
 function initializeAutoUnsubscription(targetClass: TargetClass): void {
-    if (!targetClass?.ɵUnsubscriptionHasInitialized) {
-        const defaultNgOnDestroy = targetClass.ngOnDestroy;
+    if (targetClass?.ɵUnsubscriptionHasInitialized) return;
 
-        targetClass.ɵUnsubscriptionHasInitialized = true;
-        targetClass.ɵSubscriptions = new WeakMap<Object, Subscription[]>();
+    targetClass.ɵUnsubscriptionHasInitialized = true;
+    targetClass.ɵSubscriptions = new WeakMap<Object, Subscription[]>();
 
-        targetClass.ngOnDestroy = function (): any {
-            const targetSubscriptions = targetClass.ɵSubscriptions.get(this);
-
-            if (targetSubscriptions?.length) {
-                targetSubscriptions.forEach((subscription: Subscription, index: number) => {
-                    subscription.unsubscribe();
-
-                    targetSubscriptions[index] = null;
-                });
-
-                targetSubscriptions.length = 0;
-
-                targetClass.ɵSubscriptions.delete(this);
-            }
-
-            if (defaultNgOnDestroy && typeof defaultNgOnDestroy === 'function') {
-                return defaultNgOnDestroy.apply(this);
-            }
-        };
-    }
+    overrideNgOnDestroy(targetClass);
 }
+
+function overrideNgOnDestroy(targetClass: TargetClass): void {
+    const defaultNgOnDestroy = targetClass.ngOnDestroy;
+
+    targetClass.ngOnDestroy = function (): any {
+        const targetSubscriptions = targetClass.ɵSubscriptions.get(this);
+
+        if (targetSubscriptions?.length) {
+            targetSubscriptions.forEach((subscription: Subscription, index: number) => {
+                subscription.unsubscribe();
+
+                targetSubscriptions[index] = null;
+            });
+
+            targetSubscriptions.length = 0;
+
+            targetClass.ɵSubscriptions.delete(this);
+        }
+
+        if (defaultNgOnDestroy && typeof defaultNgOnDestroy === 'function') {
+            return defaultNgOnDestroy.apply(this);
+        }
+    };
+}
+
+// Split this method !!

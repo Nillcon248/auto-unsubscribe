@@ -1,11 +1,12 @@
 import { InnerInstance, RxEntity, TargetClass } from '@src/interfaces';
-import type { Observable, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { RxEntityBase } from './rx-entity-base';
 
+type SubjectKey = keyof Subject<unknown>;
 type ObservableMethod = (...args: any[]) => Observable<unknown>;
 type SubscriptionMethod = (...args: any[]) => Subscription;
 
-const OverrideMethodNames = ['pipe', 'lift', 'asObservable'];
+const METHOD_KEYS_TO_OVERRIDE: SubjectKey[] = ['pipe', 'lift', 'asObservable'];
 
 export class RxEntityObservable extends RxEntityBase {
     public check(variable: RxEntity): boolean {
@@ -36,7 +37,7 @@ export class RxEntityObservable extends RxEntityBase {
         const self = this;
         const originSubscribeMethod = observable.subscribe;
 
-        const subscribeMethod = function (...args: unknown[]): Subscription {
+        return function (...args: unknown[]): Subscription {
             const subscription: Subscription = originSubscribeMethod.apply(this, args);
 
             if (!subscription?.closed) {
@@ -45,22 +46,20 @@ export class RxEntityObservable extends RxEntityBase {
 
             return subscription;
         };
-
-        return subscribeMethod;
     }
 
     private overrideMethods(
         observable: Observable<unknown>,
         subscribeMethod: SubscriptionMethod,
     ): void {
-        OverrideMethodNames.forEach((methodName) =>
+        METHOD_KEYS_TO_OVERRIDE.forEach((methodName) =>
             this.processObservableMethod(observable, methodName, subscribeMethod),
         );
     }
 
     private processObservableMethod(
         observable: Observable<unknown>,
-        methodName: string,
+        methodName: SubjectKey,
         subscribeMethod: SubscriptionMethod,
     ): void {
         const originMethod = observable[methodName] as ObservableMethod;
